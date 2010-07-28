@@ -8,6 +8,17 @@ For some processes I was monitoring, this was far more entertaining than just wa
 user@host ~$ tail -f /var/log/messages | typrtail
 </pre>
 
+<pre>
+user@host ~$ wget -q -O - http://www.gutenberg.org/files/730/730.txt | head -n 20 | typrtail
+</pre>
+
+h1. Installation
+
+<pre>
+user@host ~$ gem install typrtail
+</pre>
+
+
 h1. FAQ
 
 h2. What good is this?
