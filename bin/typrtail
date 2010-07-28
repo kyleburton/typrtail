@@ -1,0 +1,218 @@
+#!/usr/bin/env ruby
+
+# to make everything faster, make this <1.0, sower >1.0 HTH
+$speed_adjust = 1.0
+
+$rand_base  = 10
+$rand_range = 100.0
+
+# 1 in X chance of a typo :D
+$typo_prob     = 50
+$min_typo_prob = 10
+$min_slp       = 0.02
+
+# repeated chars are fast
+$repeat_time    = 0.05
+# typing the same char 2x is fast
+$same_type_time = 0.075
+# oops, how fast do you recover from seeing you made one or more typos?
+$time_to_recognize_typo = 0.3
+$sleep_after_space = 0.2
+
+
+# spacebar is wicked quick to hit, so is enter -- unshifted characters are
+# easier than those that require a shift key...
+$typing_rates = {
+  " "                          => 2.0,
+  "\n"                         => 1.5,
+  "abcdefghijklmnopqrstuvwxyz" => 0.9,
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ" => 0.50,
+  "`1234567890-=[]\\;',./"     => 0.60,
+  "~!@#\$%^&*()_+{{}|:\"<>?"   => 0.2,
+}
+
+# typos are near the character typed :)
+$typo_table = {
+  "a"   => "qwsz",
+  "b"   => "ghvn ",
+  "c"   => "dfxv ",
+  "d"   => "ersfxc",
+  "e"   => "34wrsd",
+  "f"   => "rtdgcv",
+  "g"   => "tyfhvb",
+  "h"   => "yugjbn",
+  "i"   => "89uojk",
+  "j"   => "uihknm,",
+  "k"   => "iojlm,",
+  "l"   => "opk;,.",
+  "m"   => " n,jk",
+  "n"   => " bmhj ",
+  "o"   => "90ipkl",
+  "p"   => "0-o[l;",
+  "q"   => "12wsa ",
+  "r"   => "45etdf",
+  "s"   => "weadzx",
+  "t"   => "56ryfg",
+  "u"   => "78yihj",
+  "v"   => "fgcb ",
+  "w"   => "23qeas",
+  "x"   => "sdzc ",
+  "y"   => "67tugh",
+  "z"   => "asx",
+
+  "A"   => "aaQWSZ",
+  "B"   => "bbGHVN ",
+  "C"   => "ccDFXV ",
+  "D"   => "ddERSFXC",
+  "E"   => "ee\#$WRSD",
+  "F"   => "ffRTDGCV",
+  "G"   => "ggTYFHVB",
+  "H"   => "hhYUGJBN",
+  "I"   => "ii*(UOJK",
+  "J"   => "jjUIHKNM,",
+  "K"   => "kkIOJLM,",
+  "L"   => "llOPK:<>",
+  "M"   => "mm N<JK",
+  "N"   => "nn BMHJ ",
+  "O"   => "oo()IPKL",
+  "P"   => "pp)_O{L:",
+  "Q"   => "qq!@WSA ",
+  "R"   => "rr$%ETDF",
+  "S"   => "ssWEADZX",
+  "T"   => "tt%^RYFG",
+  "U"   => "uu&*YIHJ",
+  "V"   => "vvFGCB ",
+  "W"   => "ww@#QEAS",
+  "X"   => "xxSDZC ",
+  "Y"   => "yy^&TUGH",
+  "Z"   => "zzASX",
+
+
+  "`"   => "1",
+  "1"   => "`22q",
+  "2"   => "1133qw",
+  "3"   => "2244we",
+  "4"   => "3355er",
+  "5"   => "4466rt",
+  "6"   => "5577ty",
+  "7"   => "6688yu",
+  "8"   => "7799ui",
+  "9"   => "8800io",
+  "0"   => "99-op",
+  "-"   => "00=p[",
+  "="   => "-[]",
+  "["   => "-=p];'",
+  "]"   => "=[\\'",
+  "\\"  => "]",
+  ";"   => "p[l'./",
+  "'"   => "[];/",
+  ","   => " m.kl",
+  "."   => ",/l;",
+  "/"   => ".;'",
+  "~"   => "`!",
+  "!"   => "11~@Q",
+  "@"   => "22!#QW",
+  "\#"  => "33@$WE",
+  "$"   => "44#%ER",
+  "%"   => "55$^RT",
+  "^"   => "66%&TY",
+  "&"   => "77^*YU",
+  "*"   => "88&(UI",
+  "("   => "99*)IO",
+  ")"   => "00(_OP",
+  "_"   => "--)+P{",
+  "+"   => "==_{}",
+  "{"   => "[[_+P}:\"",
+  "}"   => "]]+{|\"",
+  "|"   => "\\\}",
+  ":"   => ";;P{L\">?",
+  "\""  => "''{}:?",
+  "<"   => ",,KLM> ",
+  ">"   => "..<?L:",
+  "?"   => "//>:\"",
+
+  " "   => " "
+}
+
+# keep it real ;)
+def plausible_typo ch
+  chars = $typo_table[ch.chr]
+  return nil unless chars
+  chars[rand(chars.size)]
+end
+
+# Ruby msut have these, just don't know what they are
+def is_alpha? ch
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".include? ch
+end
+
+def is_num? ch
+  "0123456789".include? ch
+end
+
+# Hammer^H^H^H^H^H^Hpause time
+def pause_time ch
+  slp = 0.05 + (rand($rand_base) / $rand_range)
+  modifier = $typing_rates.keys.detect do |chars|
+    chars.include? ch
+  end
+  modifier = $typing_rates[modifier] || 0.5
+  slp / modifier
+end
+
+# backup, erase, backup (for next char)
+# NB: should peek, and not do this if next char is a newline b/c this will add
+# a space before the end of the line...
+def erase_typo
+  $stderr.putc("\b"[0])
+  $stderr.putc(" "[0])
+  $stderr.putc("\b"[0])
+end
+
+lastch = ' '
+chars_since_typeo = 0
+total_chars = 0
+while ch = $stdin.getc
+  total_chars += 1
+  slp = pause_time(ch)
+  # repeated characters are quick
+  if ch == lastch
+    slp = $repeat_time
+  # sequences of the same 'type' are quick
+  elsif is_alpha?(ch) && is_alpha?(lastch)
+    slp = $same_type_time
+  elsif is_num?(ch) && is_num?(lastch)
+    slp = $same_type_time
+  end
+
+  # awww, it gets harder to keep going w/o making a mistake :-)
+  typo_prob = $typo_prob - (chars_since_typeo/2)
+  typo_prob = typo_prob < $min_typo_prob ? $min_typo_prob : typo_prob
+  num_typos = 0
+  while rand(typo_prob) <= 1.0
+    chars_since_typeo = 0
+    typo_prob = $typo_prob
+    typo = plausible_typo ch
+    if typo
+      $stderr.putc typo
+      $stderr.flush
+      num_typos += 1
+      sleep($speed_adjust * $time_to_recognize_typo)
+    end
+    # making a typo makes another one more likely :P
+    typo_prob /= 2
+  end
+  num_typos.times { erase_typo }
+
+  # so you made it thorugh the gauntlet?  emith the char...
+  lastch = ch
+  slp += Math.sin(total_chars) / 4.0
+  slp = slp < $min_slp ? $min_slp : slp
+
+  sleep($speed_adjust * slp)
+
+  $stdout.putc ch
+  $stdout.flush
+  sleep($speed_adjust * $sleep_after_space) if ' ' == ch.chr
+  chars_since_typeo += 1
+end

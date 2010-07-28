@@ -1,0 +1,28 @@
+h1. typrtail
+
+Tail or cat a file: make it look like someone is typing them.  
+
+For some processes I was monitoring, this was far more entertaining than just watching a @tail -f@.  
+
+<pre>
+user@host ~$ tail -f /var/log/messages | typrtail
+</pre>
+
+h1. FAQ
+
+h2. What good is this?
+
+Come on, it's just for fun.
+
+h2. Why'd you do this?
+
+I was overworked and needed an escape.
+
+h2. Doesn't this already exist?
+
+Yeah, I'm sure it does, they're probably better too, I needed a break.
+
+h2. It's too slow, can you make it faster?
+
+Yes, you can.  It's a plain Ruby program, open it up and take a look at the top, there are a lot of constants (yes, globals - *gasp* globals!  I know, how awful!) that control things like the typing speed.  Have at 'em!
+
