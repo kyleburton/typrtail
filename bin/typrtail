@@ -167,6 +167,8 @@ def erase_typo
   $stderr.putc("\b"[0])
   $stderr.putc(" "[0])
   $stderr.putc("\b"[0])
+  slp = pause_time("a"[0]) / 2.0
+  sleep slp
 end
 
 lastch = ' '
@@ -200,7 +202,7 @@ while ch = $stdin.getc
       sleep($speed_adjust * $time_to_recognize_typo)
     end
     # making a typo makes another one more likely :P
-    typo_prob /= 2
+    typo_prob /= 2.0
   end
   num_typos.times { erase_typo }
 
