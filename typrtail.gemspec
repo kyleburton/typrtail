@@ -3,7 +3,7 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |s|
   s.name = "typrtail"
-  s.version = "0.0.2"
+  s.version = "0.0.3"
   s.author = "Kyle Burton"
   s.email = "kyle.burton@gmail.com"
   s.platform = Gem::Platform::RUBY
