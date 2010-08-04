@@ -18,6 +18,21 @@ h1. Installation
 user@host ~$ gem install typrtail
 </pre>
 
+h1. Configuration
+
+@typrtail@ looks for @$HOME/.typrtailrc@ and if it exists, loads it.  This file
+is plain ruby, you can override any of the parameters any way you like...have
+it your way.
+
+<pre>
+# override some defaults, be faster with more errors!
+$speed_adjust = 0.35              # was 1.0
+$typo_prob     = 35
+$min_typo_prob = 15
+
+# stop more abruptly when we hit a typo
+$time_to_recognize_typo = 0.4     # was 0.3
+</pre>
 
 h1. FAQ
 

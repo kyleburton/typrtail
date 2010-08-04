@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-# to make everything faster, make this <1.0, sower >1.0 HTH
+RC_FILE = "#{ENV['HOME']}/.typrtailrc"
+
+# to make everything faster, make this <1.0, slower >1.0 HTH
 $speed_adjust = 1.0
 
 $rand_base  = 10
@@ -170,6 +172,9 @@ def erase_typo
   slp = pause_time("a"[0]) / 2.0
   sleep slp
 end
+
+
+load RC_FILE if File.exist? RC_FILE
 
 lastch = ' '
 chars_since_typeo = 0
